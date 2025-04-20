@@ -1,12 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using WebStore.Entities;
 namespace WebStore.Entities;
 
 public partial class Order
 {
     public int OrderId { get; set; }
 
+    // New fields
+    public int? CarrierId { get; set; }
+    public string? TrackingNumber { get; set; }
+    public DateTime? ShippedDate { get; set; }
+    public DateTime? DeliveredDate { get; set; }
+
+    public Carrier? Carrier { get; set; }
     public int CustomerId { get; set; }
 
     public DateTime? OrderDate { get; set; }

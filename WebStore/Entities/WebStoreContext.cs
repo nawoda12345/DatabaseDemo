@@ -6,6 +6,8 @@ namespace WebStore.Entities;
 
 public partial class WebStoreContext : DbContext
 {
+    public DbSet<Carrier> Carriers => Set<Carrier>();
+
     public WebStoreContext()
     {
     }
@@ -135,6 +137,18 @@ public partial class WebStoreContext : DbContext
 
         modelBuilder.Entity<Order>(entity =>
         {
+            entity.Property(o => o.TrackingNumber)
+                .HasColumnName("tracking_number")
+                .HasMaxLength(50);
+
+            entity.Property(o => o.ShippedDate)
+                .HasColumnName("shipped_date");
+
+            entity.Property(o => o.DeliveredDate)
+                .HasColumnName("delivered_date");
+
+
+
             entity.HasKey(e => e.OrderId).HasName("orders_pkey");
 
             entity.ToTable("orders");
@@ -165,6 +179,36 @@ public partial class WebStoreContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("fk_orders_shipping_address");
         });
+
+        //=====
+
+        // CARRIER CONFIGURATION
+        modelBuilder.Entity<Carrier>(entity =>
+        {
+            entity.HasKey(e => e.CarrierId).HasName("carriers_pkey");
+
+            entity.ToTable("carriers");
+
+            entity.Property(e => e.CarrierName)
+                .HasMaxLength(50)
+                .HasColumnName("carrier_name");
+
+            entity.Property(e => e.ContactUrl)
+                .HasMaxLength(50)
+                .HasColumnName("contact_url");
+
+            entity.Property(e => e.ContactPhone)
+                .HasMaxLength(50)
+                .HasColumnName("contact_phone");
+
+            entity.HasMany(c => c.Orders)
+                .WithOne(o => o.Carrier)
+                .HasForeignKey(o => o.CarrierId)
+                .OnDelete(DeleteBehavior.SetNull); // Set CarrierId to null if carrier is deleted
+        });
+
+        //=====
+
 
         modelBuilder.Entity<OrderItem>(entity =>
         {
