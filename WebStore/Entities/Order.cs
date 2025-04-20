@@ -32,3 +32,5 @@ public partial class Order
 
     public virtual Address ShippingAddress { get; set; } = null!;
 }
+
+//Assignment 4 completed
