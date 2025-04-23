@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using WebStore.Entities;
@@ -11,16 +12,17 @@ using WebStore.Entities;
 namespace WebStore.Migrations
 {
     [DbContext(typeof(WebStoreContext))]
-    partial class WebStoreContextModelSnapshot : ModelSnapshot
+    [Migration("20250423164216_AddDiscountCodes")]
+    partial class AddDiscountCodes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "9.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "public", "discount_type", new[] { "percentage", "flat" });
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("ProductCategory", b =>
@@ -215,7 +217,7 @@ namespace WebStore.Migrations
                         .HasColumnName("description");
 
                     b.Property<int>("DiscountType")
-                        .HasColumnType("discount_type")
+                        .HasColumnType("integer")
                         .HasColumnName("discount_type");
 
                     b.Property<decimal>("DiscountValue")

@@ -31,6 +31,9 @@ public partial class Order
     public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 
     public virtual Address ShippingAddress { get; set; } = null!;
-}
 
-//Assignment 4 completed
+    public int? DiscountCodeId { get; set; }
+
+    public DiscountCode? DiscountCode { get; set; }
+
+}

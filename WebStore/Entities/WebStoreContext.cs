@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
 
 namespace WebStore.Entities;
 
 public partial class WebStoreContext : DbContext
 {
     public DbSet<Carrier> Carriers => Set<Carrier>();
+    public DbSet<DiscountCode> DiscountCodes => Set<DiscountCode>();
 
     public WebStoreContext()
     {
@@ -41,6 +43,11 @@ public partial class WebStoreContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.HasPostgresEnum<DiscountType>(
+        schema: "public",     // or your schema if different
+        name: "discount_type" // this name will be used in PostgreSQL
+     );
+
         modelBuilder.Entity<Address>(entity =>
         {
             entity.HasKey(e => e.AddressId).HasName("addresses_pkey");
@@ -147,18 +154,15 @@ public partial class WebStoreContext : DbContext
             entity.Property(o => o.DeliveredDate)
                 .HasColumnName("delivered_date");
 
-
-
             entity.HasKey(e => e.OrderId).HasName("orders_pkey");
-
             entity.ToTable("orders");
-
             entity.Property(e => e.OrderId).HasColumnName("order_id");
             entity.Property(e => e.BillingAddressId).HasColumnName("billing_address_id");
             entity.Property(e => e.CustomerId).HasColumnName("customer_id");
             entity.Property(e => e.OrderDate)
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("order_date");
+
             entity.Property(e => e.OrderStatus)
                 .HasMaxLength(20)
                 .HasColumnName("order_status");
@@ -178,11 +182,14 @@ public partial class WebStoreContext : DbContext
                 .HasForeignKey(d => d.ShippingAddressId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("fk_orders_shipping_address");
+
+            entity.Property(e => e.DiscountCodeId).HasColumnName("discount_code_id");
+            entity.HasOne(d => d.DiscountCode)
+                .WithMany(p => p.Orders)
+                .HasForeignKey(d => d.DiscountCodeId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
-        //=====
-
-        // CARRIER CONFIGURATION
         modelBuilder.Entity<Carrier>(entity =>
         {
             entity.HasKey(e => e.CarrierId).HasName("carriers_pkey");
@@ -206,9 +213,6 @@ public partial class WebStoreContext : DbContext
                 .HasForeignKey(o => o.CarrierId)
                 .OnDelete(DeleteBehavior.SetNull); // Set CarrierId to null if carrier is deleted
         });
-
-        //=====
-
 
         modelBuilder.Entity<OrderItem>(entity =>
         {
@@ -338,6 +342,38 @@ public partial class WebStoreContext : DbContext
                 .HasMaxLength(100)
                 .HasColumnName("street");
         });
+
+        modelBuilder.Entity<DiscountCode>(entity =>
+       {
+           entity.HasKey(e => e.DiscountCodeId).HasName("discount_codes_pkey");
+
+           entity.ToTable("discount_codes");
+
+           entity.Property(e => e.Code)
+               .HasMaxLength(20)
+               .HasColumnName("code");
+
+           entity.Property(e => e.Description)
+               .HasMaxLength(100)
+               .HasColumnName("description");
+
+           // 👇 Tell EF to use the PostgreSQL enum
+           entity.Property(e => e.DiscountType)
+               .HasColumnName("discount_type")
+               .HasColumnType("discount_type");
+
+           entity.Property(e => e.DiscountValue)
+               .HasColumnName("discount_value");
+
+           entity.Property(e => e.ExpirationDate)
+               .HasColumnName("expiration_date");
+
+           entity.Property(e => e.MaxUsage)
+               .HasColumnName("max_usage");
+
+           entity.Property(e => e.TimesUsed)
+               .HasColumnName("times_used");
+       });
 
         OnModelCreatingPartial(modelBuilder);
     }
